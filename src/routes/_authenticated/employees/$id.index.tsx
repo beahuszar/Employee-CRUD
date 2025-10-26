@@ -1,7 +1,7 @@
 //  View single employee
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/employees/$id/')({
+export const Route = createFileRoute('/_authenticated/employees/$id/')({
   component: ViewEmployee
 })
 
