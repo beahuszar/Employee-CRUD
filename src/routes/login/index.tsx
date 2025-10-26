@@ -1,6 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { api, checkAuth } from '../../lib/api'
+import { useLogin } from '../../hooks/useLogin'
+import { checkAuth } from '../../lib/api'
 
 // TODO: replace it with zod
 interface LoginSearch {
@@ -23,29 +24,21 @@ function LoginPage() {
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const loginMutation = useLogin()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
-    setLoading(true)
 
-    try {
-      // TODO: in a hook
-      await api.post('/auth/login', { username, password })
-
-      const searchParams = new URLSearchParams(window.location.search)
-      const redirectTo = searchParams.get('redirect') || '/employees'
-
-      navigate({ to: redirectTo })
-    } catch (error) {
-      // TODO: type error properly and log its message
-      console.error('Login error:', error)
-      setError('Login failed')
-    } finally {
-      setLoading(false)
-    }
+    loginMutation.mutate(
+      { username, password },
+      {
+        onSuccess: () => {
+          const searchParams = new URLSearchParams(window.location.search)
+          const redirectTo = searchParams.get('redirect') || '/employees'
+          navigate({ to: redirectTo })
+        }
+      }
+    )
   }
 
   return (
@@ -57,9 +50,11 @@ function LoginPage() {
           </h2>
         </div>
         <form className='mt-8 space-y-6' onSubmit={handleSubmit}>
-          {error && (
+          {loginMutation.isError && (
             <div className='rounded-md bg-red-50 p-4'>
-              <p className='text-sm text-red-800'>{error}</p>
+              <p className='text-sm text-red-800'>
+                {loginMutation.error?.message || 'Login failed'}
+              </p>
             </div>
           )}
           <div className='rounded-md shadow-sm -space-y-px'>
@@ -102,12 +97,12 @@ function LoginPage() {
           <div>
             <button
               type='submit'
-              disabled={loading}
-              className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium 
-  rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+              disabled={loginMutation.isPending}
+              className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium
+  rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
   disabled:opacity-50'
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loginMutation.isPending ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
