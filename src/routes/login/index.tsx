@@ -52,9 +52,7 @@ function LoginPage() {
         <form className='mt-8 space-y-6' onSubmit={handleSubmit}>
           {loginMutation.isError && (
             <div className='rounded-md bg-red-50 p-4'>
-              <p className='text-sm text-red-800'>
-                {loginMutation.error?.message || 'Login failed'}
-              </p>
+              <p className='text-sm text-red-800'>The provided username and/or password is wrong</p>
             </div>
           )}
           <div className='rounded-md shadow-sm -space-y-px'>
